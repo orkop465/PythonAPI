@@ -137,6 +137,28 @@ def validate_float_timeofday(action, index, value_if_allowed,
         return True
 
 
+# validate only ints are entered in entry box between 1 and 100, negatives not allowed
+# noinspection PyUnusedLocal
+def validate_float_NPCs(action, index, value_if_allowed,
+                             prior_value, text, validation_type, trigger_type, widget_name):
+    # action=1 -> insert
+    if action == '1':
+        if text in '0123456789.':
+            try:
+                int(value_if_allowed)
+            except ValueError:
+                return False
+            else:
+                if int(value_if_allowed) > 100:
+                    return False
+                else:
+                    return True
+        else:
+            return False
+    else:
+        return True
+
+
 # add passed argument text to the output tab's scrolledtext
 def addEntryContentToScrolledText(text, textwidget):
     entryValue = text
@@ -540,11 +562,6 @@ tab1_error_label = tk.Label(tab1, text="Error: Illegal value entered")
 tab1_serveroffline_label = tk.Label(tab1, text='Unable to connect to LGSVL')
 tab1_unabletospawn_label = tk.Label(tab1, text='Spawning timed out')
 tab1_vehicle_name_entry = tk.Entry(tab1)
-OPTIONS_NPCs = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28,
-                29, 30]
-variable_NPCs = tk.StringVar(root)
-variable_NPCs.set(OPTIONS_NPCs[19])
-tab1_NPCs_entry = tk.OptionMenu(tab1, variable_NPCs, *OPTIONS_NPCs)
 tab1_map_entry = tk.Entry(tab1)
 tab1_map_entry.insert(0, "BorregasAve")
 vcmd = (root.register(validate_int),
@@ -557,6 +574,10 @@ vcmd4 = (root.register(validate_float_spinbox),
          '%d', '%i', '%P', '%s', '%S', '%v', '%V', '%W')
 vcmd5 = (root.register(validate_float_timeofday),
          '%d', '%i', '%P', '%s', '%S', '%v', '%V', '%W')
+vcmd6 = (root.register(validate_float_NPCs),
+         '%d', '%i', '%P', '%s', '%S', '%v', '%V', '%W')
+tab1_NPCs_entry = tk.Spinbox(tab1, increment=1, from_=0, to=100,
+                             validate="key", validatecommand=vcmd6, width=8)
 tab1_seed_entry = tk.Entry(tab1, validate='key', validatecommand=vcmd2)
 tab1_runs_entry = tk.Entry(tab1, validate='key', validatecommand=vcmd)
 tab1_runtime_entry = tk.Entry(tab1, validate='key', validatecommand=vcmd3)

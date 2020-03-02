@@ -9,9 +9,13 @@ import tempfile
 import time
 import lgsvl
 import signal
+import sys
 
 # output message, will be referenced later
 endMsg = 'default'
+
+
+# TODO: weather params not working
 
 # run function, receives vehicle name, amount of NPCs, map name, runtime, seed, and timescale parameters, then creates
 # a random scenario using these variables
@@ -70,22 +74,22 @@ def run(VN, NPC, MAP, RT, SD, TS, distbetween=None, spawn_start=None, spawn_end=
         spawn_end = float(spawn_end)
 
     if rain == '-0.01':
-        rain = round(random.uniform(0, 1),2)
+        rain = round(random.uniform(0, 1), 2)
     else:
         rain = float(rain)
 
     if fog == '-0.01':
-        fog = round(random.uniform(0, 1),2)
+        fog = round(random.uniform(0, 1), 2)
     else:
         fog = float(fog)
 
     if wetness == '-0.01':
-        wetness = round(random.uniform(0, 1),2)
+        wetness = round(random.uniform(0, 1), 2)
     else:
         wetness = float(wetness)
 
     if timeofday == '-0.01':
-        timeofday = round(random.uniform(0, 24),2)
+        timeofday = round(random.uniform(0, 24), 2)
     else:
         timeofday = float(timeofday)
 
@@ -121,14 +125,25 @@ def run(VN, NPC, MAP, RT, SD, TS, distbetween=None, spawn_start=None, spawn_end=
     # object at 0x7ff1055e1860>, <lgsvl.sensor.LidarSensor object at 0x7ff1055e1898>, <lgsvl.sensor.CameraSensor object
     # at 0x7ff1055e18d0>] An EGO will not connect to a bridge unless commanded to
 
-    print("Bridge connected:", a.bridge_connected)
-
     # The EGO is now looking for a bridge at the specified IP and port
-    a.connect_bridge("192.168.43.64", 9090)
+    a.connect_bridge("localhost", 9090)
 
-    print("Waiting for connection...")
+    timer = 10.00
+
+    CURSOR_UP_ONE = '\x1b[1A'
+    ERASE_LINE = '\x1b[2K'
+
     while not a.bridge_connected:
-        time.sleep(1)
+        if timer <= 0:
+            sim.stop()
+            sim.close()
+            raise TimeoutError
+            break
+        print("Waiting for connection.... " + str(round(timer, 2)))
+        timer -= .01
+        time.sleep(.01)
+        sys.stdout.write(CURSOR_UP_ONE)
+        sys.stdout.write(ERASE_LINE)
 
     print("Bridge connected:", a.bridge_connected)
 
@@ -195,7 +210,8 @@ def run(VN, NPC, MAP, RT, SD, TS, distbetween=None, spawn_start=None, spawn_end=
             else:
                 i = i + 1
         info = "{" + vehicleName + "} {" + map + "} {" + str(seed) + "} {" + str(runtime) + "} {" + str(timescale) + "}"
-        weather = "{" + str(rain) + "} {" + str(fog) + "} {" + str(wetness) + "} {" + str(timeofday) + "} {" + str(fixed) + "}"
+        weather = "{" + str(rain) + "} {" + str(fog) + "} {" + str(wetness) + "} {" + str(timeofday) + "} {" + str(
+            fixed) + "}"
         stuffToPickle = [statesToReplay, NPCNameList, info, weather]
         pickle.dump(stuffToPickle, f)
         f.close()
